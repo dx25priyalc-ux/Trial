@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Advisor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --card: #21263a;
+      --border: #2e3348;
+      --accent: #6c63ff;
+      --accent2: #f7a541;
+      --text: #e8eaf0;
+      --muted: #8b92a9;
+      --green: #4ade80;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 60%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 32px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(108,99,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-icon { font-size: 48px; margin-bottom: 12px; }
+    .hero h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -.5px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); margin-top: 8px; font-size: 1.05rem; }
+    .plan-btn {
+      margin-top: 28px;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 50px;
+      padding: 14px 32px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(108,99,255,.4);
+    }
+    .plan-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,99,255,.5); }
+
+    /* ── Past Trips ── */
+    .section { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    .section-title {
+      font-size: 1.1rem; font-weight: 600;
+      color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .trip-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: border-color .2s, transform .2s;
+    }
+    .trip-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .trip-flag { font-size: 28px; margin-bottom: 10px; }
+    .trip-dest { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .trip-dates { font-size: .8rem; color: var(--muted); margin-bottom: 12px; }
+    .trip-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: .72rem; font-weight: 500;
+      background: rgba(108,99,255,.15); color: #a5a0ff;
+      border-radius: 20px; padding: 3px 10px;
+    }
+    .tag.vibe { background: rgba(247,165,65,.12); color: #f7a541; }
+
+    /* ── Modal Overlay ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .overlay.active { display: flex; }
+
+    /* ── Modal ── */
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      padding: 36px 32px;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,.6);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 20px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 50%;
+      width: 32px; height: 32px;
+      font-size: 18px; cursor: pointer; line-height: 30px; text-align: center;
+      transition: color .15s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .modal p.sub { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: .82rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 7px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); border-radius: 10px;
+      padding: 11px 14px; font-size: .95rem;
+      transition: border-color .15s;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group select option { background: var(--card); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* pill checkboxes */
+    .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-group input[type="checkbox"] { display: none; }
+    .pill-group label {
+      text-transform: none; letter-spacing: 0;
+      cursor: pointer;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 50px;
+      padding: 7px 14px; font-size: .85rem; font-weight: 500;
+      transition: all .15s;
+    }
+    .pill-group input[type="checkbox"]:checked + label {
+      background: rgba(108,99,255,.2);
+      border-color: var(--accent); color: #a5a0ff;
+    }
+
+    .submit-btn {
+      width: 100%; margin-top: 8px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 14px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: opacity .15s, transform .15s;
+    }
+    .submit-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Results Panel ── */
+    .results-panel {
+      display: none;
+      max-width: 860px; margin: 0 auto 60px; padding: 0 24px;
+    }
+    .results-panel.active { display: block; }
+
+    .result-block {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
+    }
+    .result-block-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: .8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .result-block-header .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); animation: pulse 1.2s infinite;
+    }
+    .result-block-header .dot.done { background: var(--green); animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: .3; }
+    }
+    .result-body {
+      padding: 20px;
+      font-size: .95rem; line-height: 1.75;
+      color: var(--text); white-space: pre-wrap;
+    }
+
+    /* Markdown-like rendering */
+    .result-body h2 {
+      font-size: 1.1rem; font-weight: 700; color: var(--accent2);
+      margin: 20px 0 8px; padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-body h2:first-child { margin-top: 0; }
+    .result-body strong { color: #d0d4e8; }
+    .result-body ul { padding-left: 18px; }
+    .result-body li { margin-bottom: 4px; }
+
+    /* loading spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(108,99,255,.3);
+      border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* destination chip */
+    .dest-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(247,165,65,.12); border: 1px solid rgba(247,165,65,.3);
+      color: var(--accent2); border-radius: 50px;
+      padding: 4px 14px; font-size: .85rem; font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 540px) {
+      .modal { padding: 24px 18px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-icon">✈️</div>
+  <h1>Your <span>Travel Advisor</span></h1>
+  <p>Personalized trip plans built from your travel DNA</p>
+  <button class="plan-btn" onclick="openModal()">
+    <span>🗺️</span> Plan a New Trip
+  </button>
+</div>
+
+<!-- ── Past Trips ── -->
+<div class="section">
+  <div class="section-title">Your Travel History</div>
+  <div class="trips-grid">
+    {% set flags = {"Bali": "🌴", "Kyoto": "⛩️", "Tuscany": "🍷", "Chiang Mai": "🐘"} %}
+    {% for trip in past_trips %}
+    <div class="trip-card">
+      <div class="trip-flag">
+        {% for k, v in flags.items() %}{% if k in trip.destination %}{{ v }}{% endif %}{% endfor %}
+      </div>
+      <div class="trip-dest">{{ trip.destination }}</div>
+      <div class="trip-dates">{{ trip.dates.from }} → {{ trip.dates.to }} · {{ trip.duration_days }} days</div>
+      <div class="trip-tags">
+        <span class="tag">{{ trip.accommodation.type }}</span>
+        <span class="tag">{{ trip.pace }}</span>
+        {% for act in trip.activities[:2] %}
+        <span class="tag">{{ act }}</span>
+        {% endfor %}
+        <span class="tag vibe">{{ trip.vibe.split(',')[0] }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ── Results ── -->
+<div class="results-panel" id="resultsPanel">
+  <div id="destChip"></div>
+
+  <div class="result-block" id="profileBlock" style="display:none">
+    <div class="result-block-header">
+      <span id="profileDot" class="dot"></span>
+      Traveler Profile
+    </div>
+    <div class="result-body" id="profileBody"></div>
+  </div>
+
+  <div class="result-block" id="planBlock" style="display:none">
+    <div class="result-block-header">
+      <span id="planDot" class="dot"></span>
+      Your Personalized Trip Plan
+    </div>
+    <div class="result-body" id="planBody"></div>
+  </div>
+</div>
+
+<!-- ── Modal ── -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2>Plan My Next Trip ✨</h2>
+    <p class="sub">Tell us where you're headed and fine-tune your preferences</p>
+
+    <form id="prefForm" onsubmit="submitPlan(event)">
+
+      <div class="form-group">
+        <label>Destination *</label>
+        <input type="text" name="destination" placeholder="e.g. Lisbon, Portugal" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Trip Duration</label>
+          <select name="duration">
+            <option value="">Any length</option>
+            <option>Long weekend (3-4 days)</option>
+            <option>One week</option>
+            <option>Two weeks</option>
+            <option>3+ weeks</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Travel Party</label>
+          <select name="travel_party">
+            <option value="">Same as usual</option>
+            <option>Solo</option>
+            <option>Couple</option>
+            <option>Friends group</option>
+            <option>Family with kids</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Budget / Day (USD)</label>
+          <select name="budget">
+            <option value="">Match my history</option>
+            <option>Budget (&lt; $100)</option>
+            <option>Mid-range ($100–$200)</option>
+            <option>Comfortable ($200–$400)</option>
+            <option>Luxury ($400+)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Travel Pace</label>
+          <select name="pace">
+            <option value="">Match my history</option>
+            <option>Very relaxed</option>
+            <option>Relaxed</option>
+            <option>Moderate</option>
+            <option>Action-packed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Activity Interests</label>
+        <div class="pill-group">
+          {% for act in ["Nature & Hiking", "Culture & History", "Food & Gastronomy", "Wellness & Spa", "Art & Museums", "Nightlife", "Adventure Sports", "Local Markets", "Photography"] %}
+          <input type="checkbox" name="activities" id="act_{{ loop.index }}" value="{{ act }}" />
+          <label for="act_{{ loop.index }}">{{ act }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Accommodation Style</label>
+        <div class="pill-group">
+          {% for s in ["Boutique Hotel", "Luxury Resort", "Hostel / Budget", "Airbnb / Apartment", "Traditional Inn", "Eco Lodge"] %}
+          <input type="checkbox" name="accommodation" id="acc_{{ loop.index }}" value="{{ s }}" />
+          <label for="acc_{{ loop.index }}">{{ s }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Anything specific you want?</label>
+        <textarea name="notes" placeholder="e.g. must-see sunrise spot, avoid tourist traps, need child-friendly options…"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        Generate My Trip Plan 🚀
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('overlay').classList.add('active');
+  }
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('active');
+  }
+  function closeOnBg(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+  }
+
+  async function submitPlan(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Thinking…';
+
+    const fd = new FormData(form);
+    const destination = fd.get('destination');
+
+    const preferences = {
+      duration: fd.get('duration'),
+      travel_party: fd.get('travel_party'),
+      budget: fd.get('budget'),
+      pace: fd.get('pace'),
+      activities: fd.getAll('activities').join(', '),
+      accommodation: fd.getAll('accommodation').join(', '),
+      notes: fd.get('notes'),
+    };
+    // remove empty values
+    Object.keys(preferences).forEach(k => !preferences[k] && delete preferences[k]);
+
+    closeModal();
+
+    // show results area
+    const panel = document.getElementById('resultsPanel');
+    panel.classList.add('active');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    document.getElementById('destChip').innerHTML =
+      `<div class="dest-chip">📍 ${destination}</div>`;
+
+    const profileBlock = document.getElementById('profileBlock');
+    const planBlock = document.getElementById('planBlock');
+    const profileBody = document.getElementById('profileBody');
+    const planBody = document.getElementById('planBody');
+    const profileDot = document.getElementById('profileDot');
+    const planDot = document.getElementById('planDot');
+
+    profileBlock.style.display = 'block';
+    planBlock.style.display = 'none';
+    profileBody.innerHTML = '';
+    planBody.innerHTML = '';
+    profileDot.className = 'dot';
+    planDot.className = 'dot';
+
+    let profileText = '';
+    let planText = '';
+    let phase = 'idle';
+
+    const res = await fetch('/api/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination, preferences }),
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const lines = decoder.decode(value).split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+
+        if (raw === '__PROFILE_START__') { phase = 'profile'; continue; }
+        if (raw === '__PROFILE_END__') {
+          phase = 'idle';
+          profileDot.className = 'dot done';
+          profileBody.innerHTML = renderMarkdown(profileText);
+          planBlock.style.display = 'block';
+          continue;
+        }
+        if (raw === '__PLAN_START__') { phase = 'plan'; continue; }
+        if (raw === '__DONE__') {
+          planDot.className = 'dot done';
+          planBody.innerHTML = renderMarkdown(planText);
+          btn.disabled = false;
+          btn.innerHTML = 'Generate My Trip Plan 🚀';
+          continue;
+        }
+
+        try {
+          const msg = JSON.parse(raw);
+          if (msg.type === 'profile') {
+            profileText += msg.chunk;
+            profileBody.textContent = profileText;
+          } else if (msg.type === 'plan') {
+            planText += msg.chunk;
+            planBody.innerHTML = renderMarkdown(planText);
+            planBlock.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }
+        } catch {}
+      }
+    }
+  }
+</script>
+</body>
+</html>
