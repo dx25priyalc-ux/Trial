@@ -1,0 +1,80 @@
+{
+  "past_bookings": [
+    {
+      "trip_id": "T001",
+      "destination": "Bali, Indonesia",
+      "dates": {"from": "2023-03-10", "to": "2023-03-20"},
+      "duration_days": 10,
+      "accommodation": {
+        "type": "boutique resort",
+        "name": "Alaya Resort Ubud",
+        "stars": 5,
+        "style": "jungle villa with private pool"
+      },
+      "budget_per_day_usd": 280,
+      "travel_party": "solo",
+      "activities": ["yoga retreat", "rice terrace hiking", "cooking class", "temple tours", "spa & wellness"],
+      "dining": ["local warungs", "fine dining", "vegan cafes"],
+      "transport": ["private driver", "scooter rental"],
+      "pace": "relaxed",
+      "vibe": "spiritual, nature, wellness"
+    },
+    {
+      "trip_id": "T002",
+      "destination": "Kyoto, Japan",
+      "dates": {"from": "2023-09-15", "to": "2023-09-25"},
+      "duration_days": 10,
+      "accommodation": {
+        "type": "ryokan",
+        "name": "Tawaraya Ryokan",
+        "stars": 5,
+        "style": "traditional Japanese inn"
+      },
+      "budget_per_day_usd": 350,
+      "travel_party": "solo",
+      "activities": ["zen garden visits", "tea ceremony", "bamboo forest walk", "temple hopping", "calligraphy class"],
+      "dining": ["kaiseki dining", "ramen shops", "street food"],
+      "transport": ["bicycle", "local bus", "walking"],
+      "pace": "slow & immersive",
+      "vibe": "cultural, historic, mindful"
+    },
+    {
+      "trip_id": "T003",
+      "destination": "Tuscany, Italy",
+      "dates": {"from": "2024-05-05", "to": "2024-05-14"},
+      "duration_days": 9,
+      "accommodation": {
+        "type": "agriturismo",
+        "name": "Podere Il Casale",
+        "stars": 4,
+        "style": "farmhouse with vineyard views"
+      },
+      "budget_per_day_usd": 320,
+      "travel_party": "solo",
+      "activities": ["wine tasting tours", "olive oil farm visit", "cooking class", "cycling through countryside", "art museum visit"],
+      "dining": ["farm-to-table", "local trattoria", "wine bars"],
+      "transport": ["rental car", "bicycle"],
+      "pace": "relaxed to moderate",
+      "vibe": "gastronomy, art, slow living"
+    },
+    {
+      "trip_id": "T004",
+      "destination": "Chiang Mai, Thailand",
+      "dates": {"from": "2024-11-01", "to": "2024-11-10"},
+      "duration_days": 9,
+      "accommodation": {
+        "type": "boutique hotel",
+        "name": "Rachamankha Hotel",
+        "stars": 5,
+        "style": "Lanna-style boutique near temples"
+      },
+      "budget_per_day_usd": 200,
+      "travel_party": "solo",
+      "activities": ["elephant sanctuary visit", "meditation retreat", "night markets", "muay thai class", "doi inthanon national park hike"],
+      "dining": ["street food", "local Thai restaurants", "rooftop bars"],
+      "transport": ["songthaew", "tuk-tuk", "bicycle"],
+      "pace": "moderate",
+      "vibe": "ethical wildlife, culture, street food"
+    }
+  ]
+}
